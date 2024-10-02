@@ -18,5 +18,22 @@
   "devDependencies": {},
   "peerDependencies": {
     "koishi": "^4.17.11"
+  },
+  "homepage": "https://github.com/saurlax/koishi-plugin-maxkb",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/saurlax/koishi-plugin-maxkb.git"
+  },
+  "koishi": {
+    "description": {
+      "en": "Integrating MaxKB in Koishi",
+      "zh": "在 Koishi 中使用 MaxKB 知识库问答系统"
+    },
+    "service": {
+      "required": [
+        "http",
+        "database"
+      ]
+    }
   }
 }
