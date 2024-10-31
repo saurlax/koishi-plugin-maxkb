@@ -1,5 +1,5 @@
-import { posix } from "path";
 import { Context, Schema } from "koishi";
+import { chat, openChat } from "./maxkb";
 
 export const name = "maxkb";
 
@@ -16,10 +16,15 @@ export interface Config {
 export const Config: Schema<Config> = Schema.object({
   baseUrl: Schema.string().description("MaxKB 应用的 Base URL"),
   apikey: Schema.string().description("MaxKB 应用的 API Key").role("secret"),
-  atTrigger: Schema.boolean().default(true).description("@机器人触发对话"),
+  privateChatTrigger: Schema.boolean()
+    .default(true)
+    .description("是否允许私聊触发对话"),
+  atTrigger: Schema.boolean()
+    .default(true)
+    .description("是否允许@机器人触发对话"),
   keywordTrigger: Schema.boolean()
     .default(false)
-    .description("检测关键词触发对话"),
+    .description("是否检测关键词触发对话"),
   keyword: Schema.string().description("检测关键词的正则表达式"),
 });
 
@@ -34,24 +39,6 @@ declare module "koishi" {
   }
 }
 
-async function openChat(ctx: Context) {
-  const url = posix.join(ctx.config.baseUrl, "chat/open");
-  const res = await ctx.http.get(url, {
-    headers: { Authorization: ctx.config.apikey },
-  });
-  return res.data;
-}
-
-async function chat(ctx: Context, message: string, chatId: string) {
-  const url = posix.join(ctx.config.baseUrl, "../chat_message", chatId);
-  const res = await ctx.http.post(
-    url,
-    { message, stream: false },
-    { headers: { Authorization: ctx.config.apikey } }
-  );
-  return res.data.content;
-}
-
 export function apply(ctx: Context) {
   const keyword = new RegExp(ctx.config.keyword);
   ctx.model.extend("maxkb", {
@@ -62,6 +49,7 @@ export function apply(ctx: Context) {
   ctx.on("message", async (session) => {
     if (
       (session.stripped.atSelf && ctx.config.atTrigger) ||
+      (session.isDirect && ctx.config.privateChatTrigger) ||
       (ctx.config.keywordTrigger && session.content.match(keyword))
     ) {
       const chats = await ctx.database.get("maxkb", session.channelId);
