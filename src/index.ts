@@ -1,4 +1,5 @@
 import { Context, Schema } from "koishi";
+import { transform } from "koishi-plugin-markdown";
 import { chat, openChat } from "./maxkb";
 
 export const name = "maxkb";
@@ -60,7 +61,8 @@ export function apply(ctx: Context) {
         chatId = await openChat(ctx);
         await ctx.database.create("maxkb", { id: session.channelId, chatId });
       }
-      session.send(await chat(ctx, session.content, chatId));
+      const rawAnswer = await chat(ctx, session.content, chatId);
+      session.send(transform(rawAnswer));
     }
   });
 }
