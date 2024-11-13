@@ -46,7 +46,7 @@ export function apply(ctx: Context) {
     chatId: "string",
   });
 
-  ctx.on("message", async (session) => {
+  ctx.middleware(async (session, next) => {
     if (
       (session.stripped.atSelf && ctx.config.atTrigger) ||
       (session.isDirect && ctx.config.privateChatTrigger) ||
